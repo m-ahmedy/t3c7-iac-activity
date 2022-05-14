@@ -1,5 +1,6 @@
 
 # T3C7 IaC Activity
 
-- Saturday group
-- Monday group
+Saturday Group IaC Activity
+- Networking
+- Servers

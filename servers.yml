@@ -1,0 +1,137 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: This is a template to create the Servers infrastructure of T3C7 Sat
+
+Parameters:
+  LatestAmiId:
+    Type: "AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>"
+    Default: "/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2"
+
+Resources:
+  WebserverSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !ImportValue T3C7-Sat-VPC
+      GroupDescription: Webserver Security Group
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          SourceSecurityGroupId: !Ref LoadBalancerSecurityGroup
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          SourceSecurityGroupId: !Ref JumpboxSecurityGroup
+
+  JumpboxSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !ImportValue T3C7-Sat-VPC
+      GroupDescription: Jumpbox Security Group
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+
+  LoadBalancerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !ImportValue T3C7-Sat-VPC
+      GroupDescription: Webserver Security Group
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+
+  WebserverLaunchConfiguration:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      ImageId: !Ref LatestAmiId
+      InstanceType: t2.micro
+      KeyName: us-west-2-key
+      SecurityGroups:
+        - !Ref WebserverSecurityGroup
+      UserData: !Base64 |
+        #!/bin/bash
+        sudo yum update -y
+        sudo yum install -y hostname httpd
+        export hostname_info="Hostname: $(hostname), Private IP: $(hostname -I)"
+        sudo touch /var/www/html/index.html
+        sudo chmod -R 777 /var/www/html/index.html
+        sudo echo "<p>$hostname_info</p>" >> /var/www/html/index.html
+        sudo systemctl start httpd.service
+        sudo systemctl enable httpd.service
+
+  WebAppGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      MaxSize: "3"
+      MinSize: "1"
+      DesiredCapacity: "2"
+
+      VPCZoneIdentifier:
+        - !ImportValue T3C7-Sat-Private-Subnet-1
+        - !ImportValue T3C7-Sat-Private-Subnet-2
+
+      LaunchConfigurationName: !Ref WebserverLaunchConfiguration
+
+      TargetGroupARNs:
+        - !Ref WebAppTargetGroup
+
+  WebAppTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      VpcId: !ImportValue T3C7-Sat-VPC
+      Port: 80
+      Protocol: HTTP
+      HealthCheckEnabled: true
+      HealthCheckIntervalSeconds: 10
+      HealthCheckPath: /
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 8
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 5
+
+  LoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Subnets:
+        - !ImportValue T3C7-Sat-Public-Subnet-1
+        - !ImportValue T3C7-Sat-Public-Subnet-2
+      SecurityGroups:
+        - !Ref LoadBalancerSecurityGroup
+
+  Listener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: "forward"
+          TargetGroupArn: !Ref WebAppTargetGroup
+      LoadBalancerArn: !Ref LoadBalancer
+      Port: 80
+      Protocol: HTTP
+
+  ListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      Actions:
+        - Type: "forward"
+          TargetGroupArn: !Ref WebAppTargetGroup
+      Conditions:
+        - Field: "path-pattern"
+          Values:
+            - "/"
+      ListenerArn: !Ref Listener
+      Priority: 1
+
+Outputs:
+  LoadBalancerDNSName:
+    Description: DNS Name of the web application
+    Value: !Join
+      - ""
+      - - "http://"
+        - !GetAtt LoadBalancer.DNSName
+    Export:
+      Name: T3C7-Sat-DNS-Name
