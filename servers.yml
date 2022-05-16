@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: 2010-09-09
 
-Description: This is a template to create the Servers infrastructure of T3C7 Sat
+Description: This is a template to create the Servers infrastructure of T3C7 Mon
 
 Parameters:
   LatestAmiId:
@@ -11,7 +11,7 @@ Resources:
   WebserverSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      VpcId: !ImportValue T3C7-Sat-VPC
+      VpcId: !ImportValue T3C7-Mon-VPC
       GroupDescription: Webserver Security Group
       SecurityGroupIngress:
         - IpProtocol: tcp
@@ -26,7 +26,7 @@ Resources:
   JumpboxSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      VpcId: !ImportValue T3C7-Sat-VPC
+      VpcId: !ImportValue T3C7-Mon-VPC
       GroupDescription: Jumpbox Security Group
       SecurityGroupIngress:
         - IpProtocol: tcp
@@ -37,7 +37,7 @@ Resources:
   LoadBalancerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      VpcId: !ImportValue T3C7-Sat-VPC
+      VpcId: !ImportValue T3C7-Mon-VPC
       GroupDescription: Webserver Security Group
       SecurityGroupIngress:
         - IpProtocol: tcp
@@ -72,8 +72,8 @@ Resources:
       DesiredCapacity: "2"
 
       VPCZoneIdentifier:
-        - !ImportValue T3C7-Sat-Private-Subnet-1
-        - !ImportValue T3C7-Sat-Private-Subnet-2
+        - !ImportValue T3C7-Mon-Private-Subnet-1
+        - !ImportValue T3C7-Mon-Private-Subnet-2
 
       LaunchConfigurationName: !Ref WebserverLaunchConfiguration
 
@@ -83,7 +83,7 @@ Resources:
   WebAppTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
-      VpcId: !ImportValue T3C7-Sat-VPC
+      VpcId: !ImportValue T3C7-Mon-VPC
       Port: 80
       Protocol: HTTP
       HealthCheckEnabled: true
@@ -98,8 +98,8 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
       Subnets:
-        - !ImportValue T3C7-Sat-Public-Subnet-1
-        - !ImportValue T3C7-Sat-Public-Subnet-2
+        - !ImportValue T3C7-Mon-Public-Subnet-1
+        - !ImportValue T3C7-Mon-Public-Subnet-2
       SecurityGroups:
         - !Ref LoadBalancerSecurityGroup
 
@@ -134,4 +134,4 @@ Outputs:
       - - "http://"
         - !GetAtt LoadBalancer.DNSName
     Export:
-      Name: T3C7-Sat-DNS-Name
+      Name: T3C7-Mon-DNS-Name

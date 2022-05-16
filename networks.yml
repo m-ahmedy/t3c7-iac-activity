@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: 2010-09-09
 
-Description: This is a template to create the Networking infrastructure of T3C7 Saturday Lab Week 6
+Description: This is a template to create the Networking infrastructure of T3C7 Monday Lab Week 6
 
 Parameters:
   VPCCIDR:
@@ -35,7 +35,7 @@ Resources:
       CidrBlock: !Ref VPCCIDR
       Tags:
         - Key: Name
-          Value: T3C7 Sat VPC
+          Value: T3C7 Mon VPC
 
   PrivateSubnet1:
     Type: AWS::EC2::Subnet
@@ -45,7 +45,7 @@ Resources:
       AvailabilityZone: !Select [0, !GetAZs ""]
       Tags:
         - Key: Name
-          Value: T3C7 Sat Private Subnet 1
+          Value: T3C7 Mon Private Subnet 1
 
   PublicSubnet1:
     Type: AWS::EC2::Subnet
@@ -56,7 +56,7 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: T3C7 Sat Public Subnet 1
+          Value: T3C7 Mon Public Subnet 1
 
   PrivateSubnet2:
     Type: AWS::EC2::Subnet
@@ -66,7 +66,7 @@ Resources:
       AvailabilityZone: !Select [1, !GetAZs ""]
       Tags:
         - Key: Name
-          Value: T3C7 Sat Private Subnet 2
+          Value: T3C7 Mon Private Subnet 2
 
   PublicSubnet2:
     Type: AWS::EC2::Subnet
@@ -77,14 +77,14 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: T3C7 Sat Public Subnet 2
+          Value: T3C7 Mon Public Subnet 2
 
   InternetGateway:
     Type: AWS::EC2::InternetGateway
     Properties:
       Tags:
         - Key: Name
-          Value: T3C7 Sat Internet Gateway
+          Value: T3C7 Mon Internet Gateway
 
   InternetGatewayVPCAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
@@ -98,7 +98,7 @@ Resources:
       VpcId: !Ref VPC
       Tags:
         - Key: Name
-          Value: T3C7 Sat Public Route Table
+          Value: T3C7 Mon Public Route Table
 
   DefaultPublicRoute:
     Type: AWS::EC2::Route
@@ -126,7 +126,7 @@ Resources:
       Domain: vpc
       Tags:
         - Key: Name
-          Value: T3C7 Sat NAT Gateway 1 EIP
+          Value: T3C7 Mon NAT Gateway 1 EIP
 
   NatGateway1:
     Type: AWS::EC2::NatGateway
@@ -135,7 +135,7 @@ Resources:
       AllocationId: !GetAtt NatGateway1EIP.AllocationId
       Tags:
         - Key: Name
-          Value: T3C7 Sat NAT Gateway 1
+          Value: T3C7 Mon NAT Gateway 1
 
   PrivateRouteTable1:
     Type: AWS::EC2::RouteTable
@@ -143,7 +143,7 @@ Resources:
       VpcId: !Ref VPC
       Tags:
         - Key: Name
-          Value: T3C7 Sat Private Route Table 1
+          Value: T3C7 Mon Private Route Table 1
 
   PrivateRoute1:
     Type: AWS::EC2::Route
@@ -165,7 +165,7 @@ Resources:
       Domain: vpc
       Tags:
         - Key: Name
-          Value: T3C7 Sat NAT Gateway 2 EIP
+          Value: T3C7 Mon NAT Gateway 2 EIP
 
   NatGateway2:
     Type: AWS::EC2::NatGateway
@@ -174,7 +174,7 @@ Resources:
       AllocationId: !GetAtt NatGateway2EIP.AllocationId
       Tags:
         - Key: Name
-          Value: T3C7 Sat NAT Gateway 2
+          Value: T3C7 Mon NAT Gateway 2
 
   PrivateRouteTable2:
     Type: AWS::EC2::RouteTable
@@ -182,7 +182,7 @@ Resources:
       VpcId: !Ref VPC
       Tags:
         - Key: Name
-          Value: T3C7 Sat Private Route Table 2
+          Value: T3C7 Mon Private Route Table 2
 
   PrivateRoute2:
     Type: AWS::EC2::Route
@@ -203,28 +203,28 @@ Outputs:
     Description: VPC ID
     Value: !Ref VPC
     Export:
-      Name: T3C7-Sat-VPC
+      Name: T3C7-Mon-VPC
 
   PublicSubnet1:
     Description: Public Subnet 1 ID
     Value: !Ref PublicSubnet1
     Export:
-      Name: T3C7-Sat-Public-Subnet-1
+      Name: T3C7-Mon-Public-Subnet-1
 
   PrivateSubnet1:
     Description: Private Subnet 1 ID
     Value: !Ref PrivateSubnet1
     Export:
-      Name: T3C7-Sat-Private-Subnet-1
+      Name: T3C7-Mon-Private-Subnet-1
 
   PublicSubnet2:
     Description: Public Subnet 2 ID
     Value: !Ref PublicSubnet2
     Export:
-      Name: T3C7-Sat-Public-Subnet-2
+      Name: T3C7-Mon-Public-Subnet-2
 
   PrivateSubnet2:
     Description: Private Subnet 2 ID
     Value: !Ref PrivateSubnet2
     Export:
-      Name: T3C7-Sat-Private-Subnet-2
+      Name: T3C7-Mon-Private-Subnet-2
